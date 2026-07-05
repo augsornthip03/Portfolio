@@ -1,280 +1,1126 @@
-const sections = [...document.querySelectorAll("main section[id]")];
-const links = [...document.querySelectorAll(".nav-links a")];
-const languageButtons = [...document.querySelectorAll(".lang-btn")];
-const zoomButtons = [...document.querySelectorAll(".zoomable-image")];
-const lightbox = document.querySelector("#image-lightbox");
-const lightboxImage = lightbox?.querySelector("img");
-const lightboxCaption = lightbox?.querySelector("figcaption");
-const lightboxCloseControls = [
-  lightbox?.querySelector(".lightbox-backdrop"),
-  lightbox?.querySelector(".lightbox-close"),
-].filter(Boolean);
-const revealItems = [
-  ...document.querySelectorAll(
-    ".section-heading, .role-facts, .portrait-card, .education-card, .timeline article, .skills-panel, .project-card, .publication-card, .achievement-panel"
-  ),
-];
-
-const activeById = new Map(
-  links.map((link) => [link.getAttribute("href").replace("#", ""), link])
-);
-
-const translations = {
-  en: {
-    skip: "Skip to content",
-    brand_subtitle: "AI & Computer Systems Portfolio",
-    nav_education: "Education",
-    nav_experience: "Experience",
-    nav_projects: "Projects",
-    nav_research: "Research/Awards",
-    nav_contact: "Contact",
-    hero_eyebrow: "AI Engineer / Computer Systems Developer",
-    hero_role: "I build practical systems that connect AI, data, and real-world operations.",
-    hero_lead:
-      "I have experience in computer vision, OCR, Thai NLP, speech processing, and full-stack AI applications. My work focuses on systems that can be delivered and used in real environments, from a hospital queue management system to AI quality inspection platforms and award-winning machine learning research.",
-    open_cv: "Open CV PDF",
-    email_me: "Email",
-    profile_label: "Profile",
-    profile_summary:
-      "An AI Engineer with a mechatronics engineering background, comfortable across research, model development, and production-facing system delivery.",
-    fact_focus_label: "Focus",
-    fact_focus_value: "Applied AI & Computer Systems",
-    fact_degree_label: "Education",
-    fact_degree_value: "M.Eng. Mechatronics Engineering",
-    fact_english_label: "English",
-    education_eyebrow: "Education",
-    education_title: "Education",
-    master_thesis:
-      "Thesis: Sound Classification for Non-Destructive Diagnosis of Basal Stem Rot Disease based on Stem Density in Oil Palm Trunks",
-    bachelor_project: "Senior Project: Game Controller for Rehabilitation Using IR and Gyro Sensors",
-    experience_eyebrow: "Experience",
-    experience_title: "Work Experience",
-    exp_baksters:
-      "Developed AI tools for process optimization and quality control, including defect detection, OCR, panel reading, object tracking, Thai sentiment analysis, summarization, and real-time speech pipelines.",
-    exp_psu:
-      "Conducted research in sound classification, NLP, and data analysis for health and rehabilitation systems, including machine learning models for acoustic diagnosis.",
-    exp_freelance:
-      "Analyzed SROI data and developed machine learning models to predict impact from independent variables.",
-    skills_eyebrow: "Technical Skills",
-    skills_title: "Core Skills",
-    tools_workflow: "Git, Linux, basic Docker, Jupyter, Ollama, vLLM, AWS EC2/S3, Windows deployment",
-    projects_eyebrow: "Selected Projects",
-    projects_title: "Highlighted Projects",
-    projects_intro:
-      "Selected work showing system development, applied AI, and delivery in real operating environments.",
-    view_image: "View image",
-    qq_desc:
-      "A dual-screen queue management system for service counters, separating an operator panel from a patient display. It supports offline operation, embedded Thai MP3 announcements, multiple service counters, numpad shortcuts, and a Windows launcher for dual-monitor use.",
-    qq_li_1: "Deployed at the Diagnostic Radiology Department, Surat Thani Hospital",
-    qq_li_2: "Synchronizes operator and patient displays with the BroadcastChannel API",
-    qq_li_3: "Stores state with localStorage so the system can resume after closing the screen",
-    qq_li_4:
-      "Designed for real service workflows: queue range, service counters, recall, complete, stop announcement, and logs",
-    smartdigest_desc:
-      "A real-time Thai/English speech transcription, translation, and summarization system. It supports adaptive audio chunking, sentence-boundary handling, chunk-level transcription and translation, and post-session summaries for faster review.",
-    smartdigest_li_1: "Supports real-time ASR with adaptive chunking",
-    smartdigest_li_2: "Shows chunk-level transcription, translation, and latency",
-    smartdigest_li_3: "Generates Thai and English summaries after each session",
-    manavis_desc:
-      "A Baksters computer vision analytics system that turns CCTV video into customer-density, zone time-spent, journey, and time-based behavior insights, helping teams identify bottlenecks and optimize workflows.",
-    manavis_li_1: "Analyzes customer density by zone and time period",
-    manavis_li_2: "Summarizes visitor journeys, time-spent, and peak days",
-    manavis_li_3: "Turns CCTV footage into decision-ready operational dashboards",
-    speech_desc:
-      "A real-time Thai/English speech-to-text and translation system integrating speech enhancement, ASR, and vLLM-based translation.",
-    speech_li_2: "Whisper ASR for Thai language",
-    speech_li_3: "Approximately 1.5-second pipeline latency",
-    staff_desc:
-      "A YOLO11m-based system for detecting and classifying staff members in retail environments, including a custom annotation tool and multi-location video processing pipeline.",
-    staff_li_3: "Designed for behavior analysis in real physical spaces",
-    research_eyebrow: "Research",
-    research_title: "Research & Publication",
-    research_intro:
-      "My main research focuses on non-destructive diagnosis of Basal Stem Rot disease in oil palm trunks using sound classification and machine learning.",
-    publication_detail:
-      "Published in the Journal of Advanced Research in Applied Mechanics, ISSN: 2289-7895, accepted on 9 May 2024.",
-    awards_eyebrow: "Awards",
-    awards_title: "Awards",
-    award_detail:
-      "Awarded by the National Research Council of Thailand for a machine learning tool for diagnosing Basal Stem Rot disease in oil palm trees.",
-    contact_eyebrow: "Contact",
-    contact_role: "AI Engineer / Computer Systems Developer",
-  },
-  th: {
-    skip: "ข้ามไปยังเนื้อหา",
-    brand_subtitle: "AI & Computer Systems Portfolio",
-    nav_education: "การศึกษา",
-    nav_experience: "ประสบการณ์",
-    nav_projects: "โปรเจกต์",
-    nav_research: "งานวิจัย/รางวัล",
-    nav_contact: "ติดต่อ",
-    hero_eyebrow: "AI Engineer / Computer Systems Developer",
-    hero_role: "นักพัฒนาระบบที่เชื่อม AI, ข้อมูล และงานหน้างานจริงให้ใช้งานได้",
-    hero_lead:
-      "ผมมีประสบการณ์ด้าน computer vision, OCR, Thai NLP, speech processing และ full-stack AI application โดยเน้นการสร้างระบบที่ใช้งานจริงได้ ตั้งแต่ระบบเรียกคิวโรงพยาบาล ระบบตรวจสอบคุณภาพด้วย AI ไปจนถึงงานวิจัย machine learning ที่ได้รับรางวัลและตีพิมพ์ในวารสารวิชาการ",
-    open_cv: "เปิด CV PDF",
-    email_me: "ส่งอีเมล",
-    profile_label: "Profile",
-    profile_summary:
-      "AI Engineer ที่มีพื้นฐานวิศวกรรมเมคคาทรอนิกส์ ทำงานได้ทั้งงานวิจัย การพัฒนาโมเดล และการส่งมอบระบบให้ผู้ใช้จริง",
-    fact_focus_label: "Focus",
-    fact_focus_value: "Applied AI & Computer Systems",
-    fact_degree_label: "Education",
-    fact_degree_value: "M.Eng. Mechatronics Engineering",
-    fact_english_label: "English",
-    education_eyebrow: "Education",
-    education_title: "ประวัติการศึกษา",
-    master_thesis:
-      "Thesis: Sound Classification for Non-Destructive Diagnosis of Basal Stem Rot Disease based on Stem Density in Oil Palm Trunks",
-    bachelor_project: "Senior Project: Game Controller for Rehabilitation Using IR and Gyro Sensors",
-    experience_eyebrow: "Experience",
-    experience_title: "ประวัติการทำงาน",
-    exp_baksters:
-      "พัฒนา AI tools สำหรับ process optimization และ quality control เช่น defect detection, OCR, panel reading, object tracking, Thai sentiment analysis, summarization และ real-time speech pipeline",
-    exp_psu:
-      "วิจัยด้าน sound classification, NLP และ data analysis สำหรับระบบสุขภาพและ rehabilitation รวมถึงการพัฒนาโมเดล machine learning สำหรับงาน acoustic diagnosis",
-    exp_freelance: "วิเคราะห์ข้อมูล SROI และพัฒนาโมเดล machine learning เพื่อคาดการณ์ผลกระทบจากตัวแปรอิสระ",
-    skills_eyebrow: "Technical Skills",
-    skills_title: "ทักษะหลัก",
-    tools_workflow: "Git, Linux, Docker พื้นฐาน, Jupyter, Ollama, vLLM, AWS EC2/S3, Windows deployment",
-    projects_eyebrow: "Selected Projects",
-    projects_title: "โปรเจกต์เด่น",
-    projects_intro: "ตัวอย่างงานที่สะท้อนทั้งการพัฒนาระบบ การใช้ AI แก้ปัญหา และการส่งมอบให้ใช้งานจริง",
-    view_image: "ขยายภาพ",
-    qq_desc:
-      "ระบบเรียกคิวสำหรับเคาน์เตอร์บริการที่ทำงานแบบสองหน้าจอ แยกแผงควบคุมสำหรับเจ้าหน้าที่และจอแสดงผลสำหรับผู้รับบริการ รองรับการใช้งานแบบ offline, เสียงประกาศภาษาไทยจาก MP3 ที่ฝังไว้ในระบบ, หลายช่องบริการ, shortcut ผ่าน numpad และ launcher สำหรับเปิดแบบ dual monitor บน Windows",
-    qq_li_1: "นำไปใช้งานที่แผนกรังสีวินิจฉัย โรงพยาบาลสุราษฎร์ธานี",
-    qq_li_2: "ซิงก์สถานะระหว่าง operator display และ patient display ด้วย BroadcastChannel API",
-    qq_li_3: "บันทึกสถานะด้วย localStorage เพื่อให้ระบบกลับมาทำงานต่อได้หลังปิดหน้าจอ",
-    qq_li_4: "ออกแบบ UI สำหรับงานบริการจริง: ช่วงบัตรคิว, ช่องบริการ, เรียกซ้ำ, เสร็จสิ้น, หยุดประกาศ และ log",
-    smartdigest_desc:
-      "ระบบถอดเสียง แปลภาษา และสรุปเนื้อหาแบบ real-time สำหรับภาษาไทย/อังกฤษ ออกแบบให้แบ่งเสียงเป็นช่วงอัตโนมัติ ตรวจจับขอบเขตประโยค แสดง transcript พร้อม translation และสร้าง session summary เพื่อทบทวนเนื้อหาได้เร็วขึ้น",
-    smartdigest_li_1: "รองรับ ASR แบบ real-time พร้อม adaptive chunking",
-    smartdigest_li_2: "แสดงผล transcription และ translation ราย chunk พร้อม latency",
-    smartdigest_li_3: "สรุปเนื้อหาเป็นภาษาไทยและอังกฤษหลังจบ session",
-    manavis_desc:
-      "ระบบ computer vision ของ Baksters สำหรับนำวิดีโอจากกล้องวงจรปิดมาวิเคราะห์ความหนาแน่นลูกค้า เวลาใช้บริการในแต่ละโซน เส้นทางการเดิน และพฤติกรรมตามช่วงเวลา เพื่อช่วยทีมมองเห็นคอขวดและปรับ workflow ให้ลื่นไหลขึ้น",
-    manavis_li_1: "วิเคราะห์ customer density แยกตามโซนและช่วงเวลา",
-    manavis_li_2: "สรุป visitor journey, time-spent และ peak day เพื่อเข้าใจพฤติกรรมลูกค้า",
-    manavis_li_3: "แปลงข้อมูลจาก CCTV เป็น dashboard ที่ใช้ประกอบการตัดสินใจได้",
-    speech_desc:
-      "ระบบถอดเสียงและแปลภาษาไทย/อังกฤษแบบ real-time โดยรวม speech enhancement, ASR และ vLLM-based translation เข้าด้วยกัน",
-    speech_li_2: "Whisper ASR สำหรับภาษาไทย",
-    speech_li_3: "pipeline latency ประมาณ 1.5 วินาที",
-    staff_desc:
-      "ระบบตรวจจับและจำแนกพนักงานในพื้นที่ค้าปลีกด้วย YOLO11m พร้อมเครื่องมือ annotation และ pipeline ประมวลผลวิดีโอจากหลายสาขา",
-    staff_li_3: "ออกแบบเพื่อวิเคราะห์พฤติกรรมในพื้นที่จริง",
-    research_eyebrow: "Research",
-    research_title: "งานวิจัยและผลงานตีพิมพ์",
-    research_intro:
-      "งานวิจัยหลักของผมอยู่ที่การจำแนกเสียงสำหรับการวินิจฉัยโรคลำต้นเน่าของปาล์มน้ำมันแบบไม่ทำลาย โดยใช้ machine learning วิเคราะห์สัญญาณเสียงจากลำต้น",
-    publication_detail:
-      "ตีพิมพ์ใน Journal of Advanced Research in Applied Mechanics, ISSN: 2289-7895, accepted 9 May 2024",
-    awards_eyebrow: "Awards",
-    awards_title: "รางวัลที่ได้รับ",
-    award_detail:
-      "ได้รับรางวัลจากสำนักงานการวิจัยแห่งชาติ จากผลงานเครื่องมือ machine learning สำหรับวินิจฉัยโรคลำต้นเน่าของปาล์มน้ำมัน",
-    contact_eyebrow: "Contact",
-    contact_role: "AI Engineer / Computer Systems Developer",
-  },
-};
-
-function applyLanguage(lang) {
-  const dict = translations[lang] || translations.th;
-  document.documentElement.lang = lang;
-  document.querySelectorAll("[data-i18n]").forEach((element) => {
-    const key = element.dataset.i18n;
-    if (dict[key]) element.textContent = dict[key];
-  });
-  languageButtons.forEach((button) => {
-    button.classList.toggle("is-active", button.dataset.lang === lang);
-    button.setAttribute("aria-pressed", button.dataset.lang === lang ? "true" : "false");
-  });
-  localStorage.setItem("portfolio-language", lang);
+:root {
+  --ink: #18302d;
+  --muted-ink: #526a65;
+  --line: #d7e2de;
+  --surface: #ffffff;
+  --surface-soft: #f5faf8;
+  --teal: #0f766e;
+  --teal-deep: #083f3c;
+  --mint: #dff4ee;
+  --amber: #e8a82e;
+  --coral: #d9674a;
+  --indigo: #4d63b8;
+  --warm: #fff6e8;
+  --shadow: 0 18px 45px rgba(24, 48, 45, 0.12);
+  --radius: 8px;
+  --max: 1180px;
 }
 
-const observer = new IntersectionObserver(
-  (entries) => {
-    const visible = entries
-      .filter((entry) => entry.isIntersecting)
-      .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+* {
+  box-sizing: border-box;
+}
 
-    if (!visible) return;
+html {
+  scroll-behavior: smooth;
+}
 
-    links.forEach((link) => link.classList.remove("is-active"));
-    activeById.get(visible.target.id)?.classList.add("is-active");
-  },
-  {
-    rootMargin: "-30% 0px -55% 0px",
-    threshold: [0.2, 0.4, 0.6],
+body {
+  margin: 0;
+  color: var(--ink);
+  background: #fbfdfc;
+  font-family: "Noto Sans Thai", Tahoma, "Segoe UI", Arial, sans-serif;
+  line-height: 1.65;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+a,
+.project-card,
+.fit-card,
+.education-card,
+.skills-panel,
+.achievement-panel,
+.publication-card,
+.portrait-card,
+.case-media img {
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease,
+    background-color 220ms ease,
+    color 220ms ease,
+    opacity 220ms ease;
+}
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 5;
+  padding: 10px 14px;
+  color: #fff;
+  background: var(--teal-deep);
+  border-radius: var(--radius);
+}
+
+.skip-link:focus {
+  top: 12px;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  border-bottom: 1px solid rgba(215, 226, 222, 0.9);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: min(var(--max), calc(100% - 32px));
+  min-height: 72px;
+  margin: 0 auto;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.brand-mark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  color: #fff;
+  background: var(--teal);
+  border-radius: 50%;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.brand strong,
+.brand small {
+  display: block;
+}
+
+.brand strong {
+  line-height: 1.1;
+}
+
+.brand small {
+  color: var(--muted-ink);
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-links a {
+  padding: 10px 12px;
+  color: var(--muted-ink);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+
+.nav-links a:hover,
+.nav-links a.is-active {
+  color: var(--teal-deep);
+  background: var(--mint);
+}
+
+.language-toggle {
+  display: inline-grid;
+  grid-template-columns: repeat(2, 42px);
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.lang-btn {
+  min-height: 34px;
+  padding: 4px 8px;
+  color: var(--muted-ink);
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.lang-btn.is-active {
+  color: #fff;
+  background: var(--teal);
+}
+
+.section-band {
+  padding: 88px 0;
+}
+
+.section-band.light {
+  background: var(--surface-soft);
+}
+
+.section-band.muted {
+  background: linear-gradient(180deg, #eef7f4 0%, #fbfdfc 100%);
+}
+
+.section-band.warm {
+  background: var(--warm);
+}
+
+.section-inner,
+.hero-inner,
+.role-facts,
+.footer-inner {
+  width: min(var(--max), calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding-top: 72px;
+  background:
+    linear-gradient(90deg, rgba(223, 244, 238, 0.92), rgba(255, 246, 232, 0.78)),
+    linear-gradient(#e6f1ed 1px, transparent 1px),
+    linear-gradient(90deg, #e6f1ed 1px, transparent 1px);
+  background-size: auto, 56px 56px, 56px 56px;
+}
+
+.hero-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+  gap: 48px;
+  align-items: center;
+}
+
+.intro-layout {
+  grid-template-columns: minmax(0, 1.16fr) minmax(300px, 0.84fr);
+}
+
+.hero-copy {
+  min-width: 0;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--teal);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p {
+  overflow-wrap: anywhere;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.18;
+}
+
+h1 {
+  max-width: 620px;
+  font-size: clamp(3rem, 6vw, 5.1rem);
+  font-weight: 900;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+h2 {
+  font-size: clamp(1.8rem, 3vw, 2.7rem);
+}
+
+h3 {
+  font-size: 1.12rem;
+}
+
+.role-line {
+  margin: 14px 0 0;
+  color: var(--teal-deep);
+  font-size: clamp(1.05rem, 2.1vw, 1.35rem);
+  font-weight: 800;
+}
+
+.hero-lead {
+  max-width: 680px;
+  margin: 22px 0 0;
+  color: var(--muted-ink);
+  font-size: 1.08rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.button.primary {
+  color: #fff;
+  border-color: var(--teal);
+  background: var(--teal);
+}
+
+.button.secondary {
+  color: var(--teal-deep);
+  border-color: rgba(15, 118, 110, 0.25);
+  background: #fff;
+}
+
+.button.ghost {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(24, 48, 45, 0.12);
+}
+
+.hero-media {
+  min-width: 0;
+}
+
+.hero-media img {
+  width: 100%;
+  border: 1px solid rgba(24, 48, 45, 0.12);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.portrait-card {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.62fr) minmax(0, 0.78fr);
+  gap: 22px;
+  align-items: center;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid rgba(24, 48, 45, 0.12);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: var(--shadow);
+}
+
+.profile-photo {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: var(--radius);
+  box-shadow: 0 10px 22px rgba(24, 48, 45, 0.12);
+}
+
+.portrait-info {
+  min-width: 0;
+}
+
+.portrait-info h2 {
+  font-size: clamp(1.45rem, 2.6vw, 2rem);
+}
+
+.portrait-info p:not(.eyebrow) {
+  margin: 12px 0 0;
+  color: var(--muted-ink);
+}
+
+.role-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 58px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--line);
+}
+
+.role-facts div {
+  min-width: 0;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.role-facts span,
+.card-kicker,
+.timeline span {
+  display: block;
+  color: var(--muted-ink);
+  font-size: 0.84rem;
+}
+
+.role-facts strong {
+  display: block;
+  margin-top: 6px;
+  line-height: 1.35;
+}
+
+.section-heading {
+  max-width: 820px;
+  margin-bottom: 34px;
+}
+
+.section-heading.compact {
+  max-width: 560px;
+  margin-bottom: 0;
+}
+
+.section-heading p:not(.eyebrow) {
+  margin: 14px 0 0;
+  color: var(--muted-ink);
+  font-size: 1.03rem;
+}
+
+.fit-grid,
+.profile-grid,
+.project-grid,
+.interview-grid,
+.education-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.25fr);
+  gap: 56px;
+  align-items: start;
+  margin-bottom: 34px;
+}
+
+.about-copy {
+  display: grid;
+  gap: 18px;
+  color: var(--muted-ink);
+  font-size: 1.06rem;
+}
+
+.about-copy p {
+  margin: 0;
+}
+
+.fit-card,
+.education-card,
+.project-card,
+.interview-grid article {
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.fit-card:hover,
+.education-card:hover,
+.project-card:hover,
+.skills-panel:hover,
+.achievement-panel:hover,
+.publication-card:hover,
+.portrait-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 36px rgba(24, 48, 45, 0.12);
+}
+
+.education-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.education-card {
+  border-left: 4px solid var(--teal);
+}
+
+.education-card:nth-child(2) {
+  border-left-color: var(--indigo);
+}
+
+.education-card span,
+.publication-card span {
+  display: block;
+  color: var(--muted-ink);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.education-card p {
+  margin: 8px 0 0;
+  color: var(--muted-ink);
+}
+
+.fit-card {
+  border-top: 4px solid var(--teal);
+}
+
+.fit-card:nth-child(2) {
+  border-top-color: var(--indigo);
+}
+
+.fit-card:nth-child(3) {
+  border-top-color: var(--amber);
+}
+
+.fit-card:nth-child(4) {
+  border-top-color: var(--coral);
+}
+
+.card-kicker {
+  margin-bottom: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.fit-card p,
+.project-card p,
+.project-card li,
+.alignment-list p,
+.timeline p,
+.skill-group p,
+.achievement-panel p,
+.interview-grid p {
+  color: var(--muted-ink);
+}
+
+.split,
+.two-column {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
+  gap: 56px;
+  align-items: start;
+}
+
+.alignment-list {
+  display: grid;
+  gap: 14px;
+}
+
+.alignment-list article {
+  padding: 0 0 18px 22px;
+  border-bottom: 1px solid var(--line);
+  border-left: 4px solid var(--teal);
+}
+
+.alignment-list article:nth-child(2) {
+  border-left-color: var(--indigo);
+}
+
+.alignment-list article:nth-child(3) {
+  border-left-color: var(--amber);
+}
+
+.alignment-list article:nth-child(4) {
+  border-left-color: var(--coral);
+}
+
+.alignment-list p {
+  margin: 8px 0 0;
+}
+
+.project-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.project-card {
+  display: flex;
+  min-height: 340px;
+  flex-direction: column;
+}
+
+.project-card.case-study {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 0.86fr) minmax(420px, 1.14fr);
+  gap: 24px;
+  min-height: 0;
+  padding: 28px;
+  color: #fff;
+  border-color: var(--teal-deep);
+  background: var(--teal-deep);
+}
+
+.case-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.case-copy p,
+.case-copy li,
+.project-card.case-study .card-kicker {
+  color: #d7fff7;
+}
+
+.case-copy p {
+  margin: 14px 0;
+}
+
+.case-copy ul {
+  margin: 0;
+}
+
+.case-media {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.case-media figure {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.case-media img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: top left;
+}
+
+.case-media figure:hover img {
+  transform: scale(1.018);
+}
+
+.case-media figcaption {
+  padding: 8px 10px;
+  color: #c7f5ec;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.zoomable-image {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: zoom-in;
+  font: inherit;
+  text-decoration: none;
+}
+
+.zoomable-image span {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: var(--radius);
+  color: #fff;
+  background: rgba(8, 32, 46, 0.76);
+  box-shadow: 0 8px 18px rgba(8, 32, 46, 0.26);
+  font-size: 0.78rem;
+  font-weight: 900;
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.zoomable-image:hover span,
+.zoomable-image:focus-visible span {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.project-card.case-study.alternate {
+  color: var(--ink);
+  border-color: var(--line);
+  background: #fff;
+}
+
+.project-card.case-study.alternate .case-copy p,
+.project-card.case-study.alternate .case-copy li,
+.project-card.case-study.alternate .card-kicker {
+  color: var(--muted-ink);
+}
+
+.project-card.manavis-study {
+  background: #113d5c;
+  border-color: #113d5c;
+}
+
+.case-media.three-up {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.case-media.three-up figure:first-child {
+  grid-column: 1 / -1;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  box-sizing: border-box;
+  place-items: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.lightbox.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: rgba(7, 22, 29, 0.78);
+  backdrop-filter: blur(7px);
+  cursor: zoom-out;
+}
+
+.lightbox-content {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 1380px);
+  max-height: 92vh;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius);
+  background: #f8fbfa;
+  box-shadow: 0 28px 72px rgba(7, 22, 29, 0.42);
+}
+
+.lightbox-content img {
+  display: block;
+  width: 100%;
+  max-height: 84vh;
+  object-fit: contain;
+  background: #f8fbfa;
+}
+
+.lightbox-content figcaption {
+  padding: 10px 14px;
+  color: var(--ink);
+  background: #fff;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: var(--radius);
+  color: #fff;
+  background: rgba(8, 32, 46, 0.82);
+  text-decoration: none;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.project-card.highlight {
+  color: #fff;
+  border-color: var(--teal-deep);
+  background: var(--teal-deep);
+}
+
+.project-card.highlight .card-kicker,
+.project-card.highlight p,
+.project-card.highlight li {
+  color: #d7fff7;
+}
+
+.project-card p {
+  margin: 14px 0;
+}
+
+.project-card ul {
+  display: grid;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding-left: 20px;
+}
+
+.timeline {
+  display: grid;
+  gap: 18px;
+  margin-top: 28px;
+}
+
+.timeline article {
+  padding-left: 24px;
+  border-left: 4px solid var(--teal);
+}
+
+.timeline article:nth-child(2) {
+  border-left-color: var(--indigo);
+}
+
+.timeline article:nth-child(3) {
+  border-left-color: var(--amber);
+}
+
+.timeline h3 {
+  margin-top: 4px;
+}
+
+.timeline p {
+  margin: 8px 0 0;
+}
+
+.skills-panel {
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: 0 14px 28px rgba(24, 48, 45, 0.08);
+}
+
+.achievement-panel {
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 14px 28px rgba(24, 48, 45, 0.08);
+}
+
+.achievement-panel article {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.achievement-panel article:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.achievement-panel p {
+  margin: 8px 0 0;
+}
+
+.publication-card {
+  margin-top: 28px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--teal);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 14px 28px rgba(24, 48, 45, 0.08);
+}
+
+.publication-card h3 {
+  margin-top: 8px;
+}
+
+.publication-card p {
+  margin: 10px 0 0;
+  color: var(--muted-ink);
+}
+
+.skill-group {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.skill-group:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.skill-group h3 {
+  color: var(--teal-deep);
+}
+
+.skill-group p {
+  margin: 8px 0 0;
+}
+
+.interview {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
+  gap: 44px;
+}
+
+.interview-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.interview-grid article {
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.interview-grid article:nth-child(1) {
+  border-top: 4px solid var(--teal);
+}
+
+.interview-grid article:nth-child(2) {
+  border-top: 4px solid var(--amber);
+}
+
+.interview-grid article:nth-child(3) {
+  border-top: 4px solid var(--coral);
+}
+
+.site-footer {
+  padding: 54px 0;
+  color: #fff;
+  background: var(--teal-deep);
+}
+
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.site-footer .eyebrow,
+.site-footer p {
+  color: #c7f5ec;
+}
+
+.contact-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-style: normal;
+}
+
+.contact-list a {
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: var(--radius);
+  color: #fff;
+  text-decoration: none;
+}
+
+.contact-list a:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.reveal {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal.is-visible {
+  animation: reveal-up 680ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.reveal:nth-child(2n) {
+  transition-delay: 60ms;
+}
+
+.reveal:nth-child(3n) {
+  transition-delay: 110ms;
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
   }
-);
-
-sections.forEach((section) => observer.observe(section));
-
-const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-if (!motionQuery.matches) {
-  revealItems.forEach((item) => item.classList.add("reveal"));
-
-  const revealObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add("is-visible");
-        revealObserver.unobserve(entry.target);
-      });
-    },
-    {
-      rootMargin: "0px 0px -10% 0px",
-      threshold: 0.08,
-    }
-  );
-
-  revealItems.forEach((item) => revealObserver.observe(item));
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-languageButtons.forEach((button) => {
-  button.addEventListener("click", () => applyLanguage(button.dataset.lang));
-});
+@media (max-width: 980px) {
+  .nav {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 14px 0;
+  }
 
-let activeZoomButton = null;
+  .nav-actions {
+    align-items: flex-start;
+    width: 100%;
+    flex-direction: column;
+  }
 
-function openLightbox(button) {
-  if (!lightbox || !lightboxImage || !lightboxCaption) return;
+  .nav-links {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
 
-  activeZoomButton = button;
-  lightboxImage.src = button.dataset.lightboxSrc;
-  lightboxImage.alt = button.dataset.lightboxAlt || "";
-  lightboxCaption.textContent = button.dataset.lightboxCaption || "";
-  lightbox.classList.add("is-open");
-  lightbox.setAttribute("aria-hidden", "false");
-  document.body.classList.add("modal-open");
-  lightbox.querySelector(".lightbox-close")?.focus({ preventScroll: true });
+  .nav-links a {
+    flex: 0 0 auto;
+  }
+
+  .hero-inner,
+  .intro-layout,
+  .about-grid,
+  .split,
+  .two-column,
+  .project-card.case-study,
+  .interview {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-media {
+    order: -1;
+  }
+
+  .portrait-card {
+    grid-template-columns: minmax(140px, 0.42fr) minmax(0, 0.58fr);
+  }
+
+  .role-facts,
+  .fit-grid,
+  .profile-grid,
+  .education-grid,
+  .interview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .section-heading.compact {
+    margin-bottom: 28px;
+  }
 }
 
-function closeLightbox() {
-  if (!lightbox || !lightboxImage || !lightboxCaption || !lightbox.classList.contains("is-open")) return;
+@media (max-width: 720px) {
+  .section-band {
+    padding: 64px 0;
+  }
 
-  lightbox.classList.remove("is-open");
-  lightbox.setAttribute("aria-hidden", "true");
-  document.body.classList.remove("modal-open");
-  lightboxImage.removeAttribute("src");
-  lightboxImage.alt = "";
-  lightboxCaption.textContent = "";
-  activeZoomButton?.focus({ preventScroll: true });
+  .hero {
+    padding-top: 34px;
+  }
+
+  h1 {
+    max-width: 100%;
+    font-size: clamp(2.7rem, 14vw, 4rem);
+  }
+
+  .hero-inner {
+    gap: 28px;
+  }
+
+  .hero-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .button {
+    width: 100%;
+  }
+
+  .role-facts,
+  .fit-grid,
+  .profile-grid,
+  .education-grid,
+  .project-grid,
+  .interview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .portrait-card {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-photo {
+    max-width: 260px;
+    margin: 0 auto;
+  }
+
+  .footer-inner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .contact-list {
+    width: 100%;
+  }
+
+  .contact-list a {
+    width: 100%;
+  }
+
+  .lightbox {
+    padding: 10px;
+  }
+
+  .lightbox-content img {
+    max-height: 78vh;
+  }
+
+  .zoomable-image span {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-zoomButtons.forEach((button) => {
-  button.addEventListener("click", () => openLightbox(button));
-});
-
-lightboxCloseControls.forEach((control) => {
-  control.addEventListener("click", closeLightbox);
-});
-
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") closeLightbox();
-});
-
-applyLanguage(localStorage.getItem("portfolio-language") || "th");
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}

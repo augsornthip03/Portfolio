@@ -1,347 +1,280 @@
-<!doctype html>
-<html lang="th">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Chalatorn Augsornthip | Portfolio</title>
-    <meta
-      name="description"
-      content="Portfolio of Chalatorn Augsornthip - AI Engineer and Computer Systems Developer"
-    >
-    <link rel="stylesheet" href="styles.css">
-  </head>
-  <body>
-    <a class="skip-link" href="#main" data-i18n="skip">ข้ามไปยังเนื้อหา</a>
+const sections = [...document.querySelectorAll("main section[id]")];
+const links = [...document.querySelectorAll(".nav-links a")];
+const languageButtons = [...document.querySelectorAll(".lang-btn")];
+const zoomButtons = [...document.querySelectorAll(".zoomable-image")];
+const lightbox = document.querySelector("#image-lightbox");
+const lightboxImage = lightbox?.querySelector("img");
+const lightboxCaption = lightbox?.querySelector("figcaption");
+const lightboxCloseControls = [
+  lightbox?.querySelector(".lightbox-backdrop"),
+  lightbox?.querySelector(".lightbox-close"),
+].filter(Boolean);
+const revealItems = [
+  ...document.querySelectorAll(
+    ".section-heading, .role-facts, .portrait-card, .education-card, .timeline article, .skills-panel, .project-card, .publication-card, .achievement-panel"
+  ),
+];
 
-    <header class="site-header" aria-label="Navigation">
-      <nav class="nav">
-        <a class="brand" href="#top" aria-label="Back to top">
-          <span class="brand-mark">CA</span>
-          <span>
-            <strong>Chalatorn</strong>
-            <small data-i18n="brand_subtitle">AI & Computer Systems Portfolio</small>
-          </span>
-        </a>
-        <div class="nav-actions">
-          <div class="nav-links" aria-label="Main navigation">
-            <a href="#education" data-i18n="nav_education">การศึกษา</a>
-            <a href="#experience" data-i18n="nav_experience">ประสบการณ์</a>
-            <a href="#projects" data-i18n="nav_projects">โปรเจกต์</a>
-            <a href="#research" data-i18n="nav_research">งานวิจัย/รางวัล</a>
-            <a href="#contact" data-i18n="nav_contact">ติดต่อ</a>
-          </div>
-          <div class="language-toggle" aria-label="Language">
-            <button type="button" class="lang-btn is-active" data-lang="th">TH</button>
-            <button type="button" class="lang-btn" data-lang="en">EN</button>
-          </div>
-        </div>
-      </nav>
-    </header>
+const activeById = new Map(
+  links.map((link) => [link.getAttribute("href").replace("#", ""), link])
+);
 
-    <main id="main">
-      <section class="hero section-band" id="top">
-        <div class="hero-inner intro-layout">
-          <div class="hero-copy">
-            <p class="eyebrow" data-i18n="hero_eyebrow">AI Engineer / Computer Systems Developer</p>
-            <h1>Chalatorn Augsornthip</h1>
-            <p class="role-line" data-i18n="hero_role">นักพัฒนาระบบที่เชื่อม AI, ข้อมูล และงานหน้างานจริงให้ใช้งานได้</p>
-            <p class="hero-lead" data-i18n="hero_lead">
-              ผมมีประสบการณ์ด้าน computer vision, OCR, Thai NLP, speech processing และ full-stack AI application
-              โดยเน้นการสร้างระบบที่ใช้งานจริงได้ ตั้งแต่ระบบเรียกคิวโรงพยาบาล ระบบตรวจสอบคุณภาพด้วย AI
-              ไปจนถึงงานวิจัย machine learning ที่ได้รับรางวัลและตีพิมพ์ในวารสารวิชาการ
-            </p>
-            <div class="hero-actions" aria-label="Important links">
-              <a class="button primary" href="assets/Chalatorn_Augsornthip_CV.pdf" target="_blank" rel="noreferrer" data-i18n="open_cv">เปิด CV PDF</a>
-              <a class="button secondary" href="mailto:augsornthip03@gmail.com" data-i18n="email_me">ส่งอีเมล</a>
-              <a class="button ghost" href="https://github.com/augsornthip03" target="_blank" rel="noreferrer">GitHub</a>
-            </div>
-          </div>
+const translations = {
+  en: {
+    skip: "Skip to content",
+    brand_subtitle: "AI & Computer Systems Portfolio",
+    nav_education: "Education",
+    nav_experience: "Experience",
+    nav_projects: "Projects",
+    nav_research: "Research/Awards",
+    nav_contact: "Contact",
+    hero_eyebrow: "AI Engineer / Computer Systems Developer",
+    hero_role: "I build practical systems that connect AI, data, and real-world operations.",
+    hero_lead:
+      "I have experience in computer vision, OCR, Thai NLP, speech processing, and full-stack AI applications. My work focuses on systems that can be delivered and used in real environments, from a hospital queue management system to AI quality inspection platforms and award-winning machine learning research.",
+    open_cv: "Open CV PDF",
+    email_me: "Email",
+    profile_label: "Profile",
+    profile_summary:
+      "An AI Engineer with a mechatronics engineering background, comfortable across research, model development, and production-facing system delivery.",
+    fact_focus_label: "Focus",
+    fact_focus_value: "Applied AI & Computer Systems",
+    fact_degree_label: "Education",
+    fact_degree_value: "M.Eng. Mechatronics Engineering",
+    fact_english_label: "English",
+    education_eyebrow: "Education",
+    education_title: "Education",
+    master_thesis:
+      "Thesis: Sound Classification for Non-Destructive Diagnosis of Basal Stem Rot Disease based on Stem Density in Oil Palm Trunks",
+    bachelor_project: "Senior Project: Game Controller for Rehabilitation Using IR and Gyro Sensors",
+    experience_eyebrow: "Experience",
+    experience_title: "Work Experience",
+    exp_baksters:
+      "Developed AI tools for process optimization and quality control, including defect detection, OCR, panel reading, object tracking, Thai sentiment analysis, summarization, and real-time speech pipelines.",
+    exp_psu:
+      "Conducted research in sound classification, NLP, and data analysis for health and rehabilitation systems, including machine learning models for acoustic diagnosis.",
+    exp_freelance:
+      "Analyzed SROI data and developed machine learning models to predict impact from independent variables.",
+    skills_eyebrow: "Technical Skills",
+    skills_title: "Core Skills",
+    tools_workflow: "Git, Linux, basic Docker, Jupyter, Ollama, vLLM, AWS EC2/S3, Windows deployment",
+    projects_eyebrow: "Selected Projects",
+    projects_title: "Highlighted Projects",
+    projects_intro:
+      "Selected work showing system development, applied AI, and delivery in real operating environments.",
+    view_image: "View image",
+    qq_desc:
+      "A dual-screen queue management system for service counters, separating an operator panel from a patient display. It supports offline operation, embedded Thai MP3 announcements, multiple service counters, numpad shortcuts, and a Windows launcher for dual-monitor use.",
+    qq_li_1: "Deployed at the Diagnostic Radiology Department, Surat Thani Hospital",
+    qq_li_2: "Synchronizes operator and patient displays with the BroadcastChannel API",
+    qq_li_3: "Stores state with localStorage so the system can resume after closing the screen",
+    qq_li_4:
+      "Designed for real service workflows: queue range, service counters, recall, complete, stop announcement, and logs",
+    smartdigest_desc:
+      "A real-time Thai/English speech transcription, translation, and summarization system. It supports adaptive audio chunking, sentence-boundary handling, chunk-level transcription and translation, and post-session summaries for faster review.",
+    smartdigest_li_1: "Supports real-time ASR with adaptive chunking",
+    smartdigest_li_2: "Shows chunk-level transcription, translation, and latency",
+    smartdigest_li_3: "Generates Thai and English summaries after each session",
+    manavis_desc:
+      "A Baksters computer vision analytics system that turns CCTV video into customer-density, zone time-spent, journey, and time-based behavior insights, helping teams identify bottlenecks and optimize workflows.",
+    manavis_li_1: "Analyzes customer density by zone and time period",
+    manavis_li_2: "Summarizes visitor journeys, time-spent, and peak days",
+    manavis_li_3: "Turns CCTV footage into decision-ready operational dashboards",
+    speech_desc:
+      "A real-time Thai/English speech-to-text and translation system integrating speech enhancement, ASR, and vLLM-based translation.",
+    speech_li_2: "Whisper ASR for Thai language",
+    speech_li_3: "Approximately 1.5-second pipeline latency",
+    staff_desc:
+      "A YOLO11m-based system for detecting and classifying staff members in retail environments, including a custom annotation tool and multi-location video processing pipeline.",
+    staff_li_3: "Designed for behavior analysis in real physical spaces",
+    research_eyebrow: "Research",
+    research_title: "Research & Publication",
+    research_intro:
+      "My main research focuses on non-destructive diagnosis of Basal Stem Rot disease in oil palm trunks using sound classification and machine learning.",
+    publication_detail:
+      "Published in the Journal of Advanced Research in Applied Mechanics, ISSN: 2289-7895, accepted on 9 May 2024.",
+    awards_eyebrow: "Awards",
+    awards_title: "Awards",
+    award_detail:
+      "Awarded by the National Research Council of Thailand for a machine learning tool for diagnosing Basal Stem Rot disease in oil palm trees.",
+    contact_eyebrow: "Contact",
+    contact_role: "AI Engineer / Computer Systems Developer",
+  },
+  th: {
+    skip: "ข้ามไปยังเนื้อหา",
+    brand_subtitle: "AI & Computer Systems Portfolio",
+    nav_education: "การศึกษา",
+    nav_experience: "ประสบการณ์",
+    nav_projects: "โปรเจกต์",
+    nav_research: "งานวิจัย/รางวัล",
+    nav_contact: "ติดต่อ",
+    hero_eyebrow: "AI Engineer / Computer Systems Developer",
+    hero_role: "นักพัฒนาระบบที่เชื่อม AI, ข้อมูล และงานหน้างานจริงให้ใช้งานได้",
+    hero_lead:
+      "ผมมีประสบการณ์ด้าน computer vision, OCR, Thai NLP, speech processing และ full-stack AI application โดยเน้นการสร้างระบบที่ใช้งานจริงได้ ตั้งแต่ระบบเรียกคิวโรงพยาบาล ระบบตรวจสอบคุณภาพด้วย AI ไปจนถึงงานวิจัย machine learning ที่ได้รับรางวัลและตีพิมพ์ในวารสารวิชาการ",
+    open_cv: "เปิด CV PDF",
+    email_me: "ส่งอีเมล",
+    profile_label: "Profile",
+    profile_summary:
+      "AI Engineer ที่มีพื้นฐานวิศวกรรมเมคคาทรอนิกส์ ทำงานได้ทั้งงานวิจัย การพัฒนาโมเดล และการส่งมอบระบบให้ผู้ใช้จริง",
+    fact_focus_label: "Focus",
+    fact_focus_value: "Applied AI & Computer Systems",
+    fact_degree_label: "Education",
+    fact_degree_value: "M.Eng. Mechatronics Engineering",
+    fact_english_label: "English",
+    education_eyebrow: "Education",
+    education_title: "ประวัติการศึกษา",
+    master_thesis:
+      "Thesis: Sound Classification for Non-Destructive Diagnosis of Basal Stem Rot Disease based on Stem Density in Oil Palm Trunks",
+    bachelor_project: "Senior Project: Game Controller for Rehabilitation Using IR and Gyro Sensors",
+    experience_eyebrow: "Experience",
+    experience_title: "ประวัติการทำงาน",
+    exp_baksters:
+      "พัฒนา AI tools สำหรับ process optimization และ quality control เช่น defect detection, OCR, panel reading, object tracking, Thai sentiment analysis, summarization และ real-time speech pipeline",
+    exp_psu:
+      "วิจัยด้าน sound classification, NLP และ data analysis สำหรับระบบสุขภาพและ rehabilitation รวมถึงการพัฒนาโมเดล machine learning สำหรับงาน acoustic diagnosis",
+    exp_freelance: "วิเคราะห์ข้อมูล SROI และพัฒนาโมเดล machine learning เพื่อคาดการณ์ผลกระทบจากตัวแปรอิสระ",
+    skills_eyebrow: "Technical Skills",
+    skills_title: "ทักษะหลัก",
+    tools_workflow: "Git, Linux, Docker พื้นฐาน, Jupyter, Ollama, vLLM, AWS EC2/S3, Windows deployment",
+    projects_eyebrow: "Selected Projects",
+    projects_title: "โปรเจกต์เด่น",
+    projects_intro: "ตัวอย่างงานที่สะท้อนทั้งการพัฒนาระบบ การใช้ AI แก้ปัญหา และการส่งมอบให้ใช้งานจริง",
+    view_image: "ขยายภาพ",
+    qq_desc:
+      "ระบบเรียกคิวสำหรับเคาน์เตอร์บริการที่ทำงานแบบสองหน้าจอ แยกแผงควบคุมสำหรับเจ้าหน้าที่และจอแสดงผลสำหรับผู้รับบริการ รองรับการใช้งานแบบ offline, เสียงประกาศภาษาไทยจาก MP3 ที่ฝังไว้ในระบบ, หลายช่องบริการ, shortcut ผ่าน numpad และ launcher สำหรับเปิดแบบ dual monitor บน Windows",
+    qq_li_1: "นำไปใช้งานที่แผนกรังสีวินิจฉัย โรงพยาบาลสุราษฎร์ธานี",
+    qq_li_2: "ซิงก์สถานะระหว่าง operator display และ patient display ด้วย BroadcastChannel API",
+    qq_li_3: "บันทึกสถานะด้วย localStorage เพื่อให้ระบบกลับมาทำงานต่อได้หลังปิดหน้าจอ",
+    qq_li_4: "ออกแบบ UI สำหรับงานบริการจริง: ช่วงบัตรคิว, ช่องบริการ, เรียกซ้ำ, เสร็จสิ้น, หยุดประกาศ และ log",
+    smartdigest_desc:
+      "ระบบถอดเสียง แปลภาษา และสรุปเนื้อหาแบบ real-time สำหรับภาษาไทย/อังกฤษ ออกแบบให้แบ่งเสียงเป็นช่วงอัตโนมัติ ตรวจจับขอบเขตประโยค แสดง transcript พร้อม translation และสร้าง session summary เพื่อทบทวนเนื้อหาได้เร็วขึ้น",
+    smartdigest_li_1: "รองรับ ASR แบบ real-time พร้อม adaptive chunking",
+    smartdigest_li_2: "แสดงผล transcription และ translation ราย chunk พร้อม latency",
+    smartdigest_li_3: "สรุปเนื้อหาเป็นภาษาไทยและอังกฤษหลังจบ session",
+    manavis_desc:
+      "ระบบ computer vision ของ Baksters สำหรับนำวิดีโอจากกล้องวงจรปิดมาวิเคราะห์ความหนาแน่นลูกค้า เวลาใช้บริการในแต่ละโซน เส้นทางการเดิน และพฤติกรรมตามช่วงเวลา เพื่อช่วยทีมมองเห็นคอขวดและปรับ workflow ให้ลื่นไหลขึ้น",
+    manavis_li_1: "วิเคราะห์ customer density แยกตามโซนและช่วงเวลา",
+    manavis_li_2: "สรุป visitor journey, time-spent และ peak day เพื่อเข้าใจพฤติกรรมลูกค้า",
+    manavis_li_3: "แปลงข้อมูลจาก CCTV เป็น dashboard ที่ใช้ประกอบการตัดสินใจได้",
+    speech_desc:
+      "ระบบถอดเสียงและแปลภาษาไทย/อังกฤษแบบ real-time โดยรวม speech enhancement, ASR และ vLLM-based translation เข้าด้วยกัน",
+    speech_li_2: "Whisper ASR สำหรับภาษาไทย",
+    speech_li_3: "pipeline latency ประมาณ 1.5 วินาที",
+    staff_desc:
+      "ระบบตรวจจับและจำแนกพนักงานในพื้นที่ค้าปลีกด้วย YOLO11m พร้อมเครื่องมือ annotation และ pipeline ประมวลผลวิดีโอจากหลายสาขา",
+    staff_li_3: "ออกแบบเพื่อวิเคราะห์พฤติกรรมในพื้นที่จริง",
+    research_eyebrow: "Research",
+    research_title: "งานวิจัยและผลงานตีพิมพ์",
+    research_intro:
+      "งานวิจัยหลักของผมอยู่ที่การจำแนกเสียงสำหรับการวินิจฉัยโรคลำต้นเน่าของปาล์มน้ำมันแบบไม่ทำลาย โดยใช้ machine learning วิเคราะห์สัญญาณเสียงจากลำต้น",
+    publication_detail:
+      "ตีพิมพ์ใน Journal of Advanced Research in Applied Mechanics, ISSN: 2289-7895, accepted 9 May 2024",
+    awards_eyebrow: "Awards",
+    awards_title: "รางวัลที่ได้รับ",
+    award_detail:
+      "ได้รับรางวัลจากสำนักงานการวิจัยแห่งชาติ จากผลงานเครื่องมือ machine learning สำหรับวินิจฉัยโรคลำต้นเน่าของปาล์มน้ำมัน",
+    contact_eyebrow: "Contact",
+    contact_role: "AI Engineer / Computer Systems Developer",
+  },
+};
 
-          <aside class="portrait-card" aria-label="Profile">
-            <img class="profile-photo" src="assets/profile-photo.jpg" alt="Portrait of Chalatorn Augsornthip">
-            <div class="portrait-info">
-              <p class="eyebrow" data-i18n="profile_label">Profile</p>
-              <h2>Chalatorn Augsornthip</h2>
-              <p data-i18n="profile_summary">
-                AI Engineer ที่มีพื้นฐานวิศวกรรมเมคคาทรอนิกส์ ทำงานได้ทั้งงานวิจัย การพัฒนาโมเดล และการส่งมอบระบบให้ผู้ใช้จริง
-              </p>
-            </div>
-          </aside>
-        </div>
+function applyLanguage(lang) {
+  const dict = translations[lang] || translations.th;
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    const key = element.dataset.i18n;
+    if (dict[key]) element.textContent = dict[key];
+  });
+  languageButtons.forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.lang === lang);
+    button.setAttribute("aria-pressed", button.dataset.lang === lang ? "true" : "false");
+  });
+  localStorage.setItem("portfolio-language", lang);
+}
 
-        <div class="role-facts" aria-label="Quick facts">
-          <div>
-            <span data-i18n="fact_focus_label">Focus</span>
-            <strong data-i18n="fact_focus_value">Applied AI & Computer Systems</strong>
-          </div>
-          <div>
-            <span data-i18n="fact_degree_label">Education</span>
-            <strong data-i18n="fact_degree_value">M.Eng. Mechatronics Engineering</strong>
-          </div>
-          <div>
-            <span data-i18n="fact_english_label">English</span>
-            <strong>TOEIC 885</strong>
-          </div>
-        </div>
-      </section>
+const observer = new IntersectionObserver(
+  (entries) => {
+    const visible = entries
+      .filter((entry) => entry.isIntersecting)
+      .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
 
-      <section class="section-band light" id="education">
-        <div class="section-inner">
-          <div class="section-heading">
-            <p class="eyebrow" data-i18n="education_eyebrow">Education</p>
-            <h2 data-i18n="education_title">ประวัติการศึกษา</h2>
-          </div>
-          <div class="education-grid">
-            <article class="education-card">
-              <span>August 2020 - February 2024</span>
-              <h3>M.Eng. in Mechatronics Engineering</h3>
-              <p>Prince of Songkla University</p>
-              <p data-i18n="master_thesis">Thesis: Sound Classification for Non-Destructive Diagnosis of Basal Stem Rot Disease based on Stem Density in Oil Palm Trunks</p>
-            </article>
-            <article class="education-card">
-              <span>August 2016 - May 2020</span>
-              <h3>B.Eng. in Mechatronics Engineering</h3>
-              <p>Prince of Songkla University</p>
-              <p data-i18n="bachelor_project">Senior Project: Game Controller for Rehabilitation Using IR and Gyro Sensors</p>
-            </article>
-          </div>
-        </div>
-      </section>
+    if (!visible) return;
 
-      <section class="section-band" id="experience">
-        <div class="section-inner two-column">
-          <div>
-            <div class="section-heading compact">
-              <p class="eyebrow" data-i18n="experience_eyebrow">Experience</p>
-              <h2 data-i18n="experience_title">ประวัติการทำงาน</h2>
-            </div>
-            <div class="timeline">
-              <article>
-                <span>May 2024 - March 2026</span>
-                <h3>AI Researcher / Engineer, Baksters Co., Ltd</h3>
-                <p data-i18n="exp_baksters">
-                  พัฒนา AI tools สำหรับ process optimization และ quality control เช่น defect detection,
-                  OCR, panel reading, object tracking, Thai sentiment analysis, summarization และ real-time speech pipeline
-                </p>
-              </article>
-              <article>
-                <span>January 2020 - October 2023</span>
-                <h3>Research Assistant, Prince of Songkla University</h3>
-                <p data-i18n="exp_psu">
-                  วิจัยด้าน sound classification, NLP และ data analysis สำหรับระบบสุขภาพและ rehabilitation
-                  รวมถึงการพัฒนาโมเดล machine learning สำหรับงาน acoustic diagnosis
-                </p>
-              </article>
-              <article>
-                <span>February 2024</span>
-                <h3>Freelance Data Scientist</h3>
-                <p data-i18n="exp_freelance">วิเคราะห์ข้อมูล SROI และพัฒนาโมเดล machine learning เพื่อคาดการณ์ผลกระทบจากตัวแปรอิสระ</p>
-              </article>
-            </div>
-          </div>
+    links.forEach((link) => link.classList.remove("is-active"));
+    activeById.get(visible.target.id)?.classList.add("is-active");
+  },
+  {
+    rootMargin: "-30% 0px -55% 0px",
+    threshold: [0.2, 0.4, 0.6],
+  }
+);
 
-          <aside class="skills-panel" aria-label="Technical skills">
-            <p class="eyebrow" data-i18n="skills_eyebrow">Technical Skills</p>
-            <h2 data-i18n="skills_title">ทักษะหลัก</h2>
-            <div class="skill-group">
-              <h3>Programming & Web</h3>
-              <p>Python, C, SQL, HTML, CSS, FastAPI, Flask, Streamlit, Gradio</p>
-            </div>
-            <div class="skill-group">
-              <h3>AI / ML / Vision</h3>
-              <p>PyTorch, TensorFlow, scikit-learn, YOLOv8/v11, OpenCV, MediaPipe, PaddleOCR, Tesseract</p>
-            </div>
-            <div class="skill-group">
-              <h3>Thai NLP & Speech</h3>
-              <p>WangchanBERTa, ThaiBERT, Typhoon, Whisper, Wav2Vec, ASR, TTS, topic modeling</p>
-            </div>
-            <div class="skill-group">
-              <h3>Tools & Workflow</h3>
-              <p data-i18n="tools_workflow">Git, Linux, Docker พื้นฐาน, Jupyter, Ollama, vLLM, AWS EC2/S3, Windows deployment</p>
-            </div>
-          </aside>
-        </div>
-      </section>
+sections.forEach((section) => observer.observe(section));
 
-      <section class="section-band muted" id="projects">
-        <div class="section-inner">
-          <div class="section-heading">
-            <p class="eyebrow" data-i18n="projects_eyebrow">Selected Projects</p>
-            <h2 data-i18n="projects_title">โปรเจกต์เด่น</h2>
-            <p data-i18n="projects_intro">ตัวอย่างงานที่สะท้อนทั้งการพัฒนาระบบ การใช้ AI แก้ปัญหา และการส่งมอบให้ใช้งานจริง</p>
-          </div>
+const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-          <div class="project-grid">
-            <article class="project-card case-study">
-              <div class="case-copy">
-                <span class="card-kicker">Hospital System</span>
-                <h3>QQ Queue Management System</h3>
-                <p data-i18n="qq_desc">
-                  ระบบเรียกคิวสำหรับเคาน์เตอร์บริการที่ทำงานแบบสองหน้าจอ แยกแผงควบคุมสำหรับเจ้าหน้าที่
-                  และจอแสดงผลสำหรับผู้รับบริการ รองรับการใช้งานแบบ offline, เสียงประกาศภาษาไทยจาก MP3
-                  ที่ฝังไว้ในระบบ, หลายช่องบริการ, shortcut ผ่าน numpad และ launcher สำหรับเปิดแบบ dual monitor บน Windows
-                </p>
-                <ul>
-                  <li data-i18n="qq_li_1">นำไปใช้งานที่แผนกรังสีวินิจฉัย โรงพยาบาลสุราษฎร์ธานี</li>
-                  <li data-i18n="qq_li_2">ซิงก์สถานะระหว่าง operator display และ patient display ด้วย BroadcastChannel API</li>
-                  <li data-i18n="qq_li_3">บันทึกสถานะด้วย localStorage เพื่อให้ระบบกลับมาทำงานต่อได้หลังปิดหน้าจอ</li>
-                  <li data-i18n="qq_li_4">ออกแบบ UI สำหรับงานบริการจริง: ช่วงบัตรคิว, ช่องบริการ, เรียกซ้ำ, เสร็จสิ้น, หยุดประกาศ และ log</li>
-                </ul>
-              </div>
-              <div class="case-media" aria-label="QQ screenshots">
-                <figure>
-                  <button class="zoomable-image" type="button" data-lightbox-src="assets/qq-operator-live.png" data-lightbox-alt="Operator panel of QQ Queue Management System" data-lightbox-caption="Operator panel">
-                    <img src="assets/qq-operator-live.png" alt="Operator panel of QQ Queue Management System">
-                    <span data-i18n="view_image">ขยายภาพ</span>
-                  </button>
-                  <figcaption>Operator panel</figcaption>
-                </figure>
-                <figure>
-                  <button class="zoomable-image" type="button" data-lightbox-src="assets/qq-patient-live.png" data-lightbox-alt="Patient display of QQ Queue Management System" data-lightbox-caption="Patient display">
-                    <img src="assets/qq-patient-live.png" alt="Patient display of QQ Queue Management System">
-                    <span data-i18n="view_image">ขยายภาพ</span>
-                  </button>
-                  <figcaption>Patient display</figcaption>
-                </figure>
-              </div>
-            </article>
+if (!motionQuery.matches) {
+  revealItems.forEach((item) => item.classList.add("reveal"));
 
-            <article class="project-card case-study alternate">
-              <div class="case-copy">
-                <span class="card-kicker">Speech AI</span>
-                <h3>SmartDigest ASR</h3>
-                <p data-i18n="smartdigest_desc">
-                  ระบบถอดเสียง แปลภาษา และสรุปเนื้อหาแบบ real-time สำหรับภาษาไทย/อังกฤษ
-                  ออกแบบให้แบ่งเสียงเป็นช่วงอัตโนมัติ ตรวจจับขอบเขตประโยค แสดง transcript พร้อม translation
-                  และสร้าง session summary เพื่อทบทวนเนื้อหาได้เร็วขึ้น
-                </p>
-                <ul>
-                  <li data-i18n="smartdigest_li_1">รองรับ ASR แบบ real-time พร้อม adaptive chunking</li>
-                  <li data-i18n="smartdigest_li_2">แสดงผล transcription และ translation ราย chunk พร้อม latency</li>
-                  <li data-i18n="smartdigest_li_3">สรุปเนื้อหาเป็นภาษาไทยและอังกฤษหลังจบ session</li>
-                </ul>
-              </div>
-              <div class="case-media" aria-label="SmartDigest screenshots">
-                <figure>
-                  <button class="zoomable-image" type="button" data-lightbox-src="assets/smartdigest-asr.png" data-lightbox-alt="SmartDigest ASR interface showing transcriptions and translations" data-lightbox-caption="Live transcription table">
-                    <img src="assets/smartdigest-asr.png" alt="SmartDigest ASR interface showing transcriptions and translations">
-                    <span data-i18n="view_image">ขยายภาพ</span>
-                  </button>
-                  <figcaption>Live transcription table</figcaption>
-                </figure>
-                <figure>
-                  <button class="zoomable-image" type="button" data-lightbox-src="assets/smartdigest-summary.png" data-lightbox-alt="SmartDigest session summary interface" data-lightbox-caption="Thai and English summary">
-                    <img src="assets/smartdigest-summary.png" alt="SmartDigest session summary interface">
-                    <span data-i18n="view_image">ขยายภาพ</span>
-                  </button>
-                  <figcaption>Thai and English summary</figcaption>
-                </figure>
-              </div>
-            </article>
+  const revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        revealObserver.unobserve(entry.target);
+      });
+    },
+    {
+      rootMargin: "0px 0px -10% 0px",
+      threshold: 0.08,
+    }
+  );
 
-            <article class="project-card case-study manavis-study">
-              <div class="case-copy">
-                <span class="card-kicker">Computer Vision Analytics</span>
-                <h3>Manavis Customer Flow Analytics</h3>
-                <p data-i18n="manavis_desc">
-                  ระบบ computer vision ของ Baksters สำหรับนำวิดีโอจากกล้องวงจรปิดมาวิเคราะห์ความหนาแน่นลูกค้า
-                  เวลาใช้บริการในแต่ละโซน เส้นทางการเดิน และพฤติกรรมตามช่วงเวลา เพื่อช่วยทีมมองเห็นคอขวด
-                  และปรับ workflow ให้ลื่นไหลขึ้น
-                </p>
-                <ul>
-                  <li data-i18n="manavis_li_1">วิเคราะห์ customer density แยกตามโซนและช่วงเวลา</li>
-                  <li data-i18n="manavis_li_2">สรุป visitor journey, time-spent และ peak day เพื่อเข้าใจพฤติกรรมลูกค้า</li>
-                  <li data-i18n="manavis_li_3">แปลงข้อมูลจาก CCTV เป็น dashboard ที่ใช้ประกอบการตัดสินใจได้</li>
-                </ul>
-              </div>
-              <div class="case-media three-up" aria-label="Manavis screenshots">
-                <figure>
-                  <button class="zoomable-image" type="button" data-lightbox-src="assets/manavis-overall-clean.png" data-lightbox-alt="Manavis visitor time-spent dashboard" data-lightbox-caption="Overall time-spent">
-                    <img src="assets/manavis-overall-clean.png" alt="Manavis visitor time-spent dashboard">
-                    <span data-i18n="view_image">ขยายภาพ</span>
-                  </button>
-                  <figcaption>Overall time-spent</figcaption>
-                </figure>
-                <figure>
-                  <button class="zoomable-image" type="button" data-lightbox-src="assets/manavis-zone-clean.png" data-lightbox-alt="Manavis zone time-spent dashboard" data-lightbox-caption="Zone time-spent">
-                    <img src="assets/manavis-zone-clean.png" alt="Manavis zone time-spent dashboard">
-                    <span data-i18n="view_image">ขยายภาพ</span>
-                  </button>
-                  <figcaption>Zone time-spent</figcaption>
-                </figure>
-                <figure>
-                  <button class="zoomable-image" type="button" data-lightbox-src="assets/manavis-vip-clean.png" data-lightbox-alt="Manavis VIP area analytics dashboard" data-lightbox-caption="VIP area and journey">
-                    <img src="assets/manavis-vip-clean.png" alt="Manavis VIP area analytics dashboard">
-                    <span data-i18n="view_image">ขยายภาพ</span>
-                  </button>
-                  <figcaption>VIP area and journey</figcaption>
-                </figure>
-              </div>
-            </article>
-          </div>
-        </div>
-      </section>
+  revealItems.forEach((item) => revealObserver.observe(item));
+}
 
-      <section class="section-band warm" id="research">
-        <div class="section-inner two-column">
-          <div>
-            <div class="section-heading compact">
-              <p class="eyebrow" data-i18n="research_eyebrow">Research</p>
-              <h2 data-i18n="research_title">งานวิจัยและผลงานตีพิมพ์</h2>
-              <p data-i18n="research_intro">
-                งานวิจัยหลักของผมอยู่ที่การจำแนกเสียงสำหรับการวินิจฉัยโรคลำต้นเน่าของปาล์มน้ำมันแบบไม่ทำลาย
-                โดยใช้ machine learning วิเคราะห์สัญญาณเสียงจากลำต้น
-              </p>
-            </div>
-            <div class="publication-card">
-              <span>SCOPUS Indexed Publication</span>
-              <h3>Sound Classification for Non-Destructive Diagnosis of Basal Stem Rot Disease based on Stem Density in Oil Palm Trunks</h3>
-              <p data-i18n="publication_detail">
-                ตีพิมพ์ใน Journal of Advanced Research in Applied Mechanics, ISSN: 2289-7895, accepted 9 May 2024
-              </p>
-            </div>
-          </div>
+languageButtons.forEach((button) => {
+  button.addEventListener("click", () => applyLanguage(button.dataset.lang));
+});
 
-          <div class="achievement-panel">
-            <p class="eyebrow" data-i18n="awards_eyebrow">Awards</p>
-            <h2 data-i18n="awards_title">รางวัลที่ได้รับ</h2>
-            <article>
-              <h3>Thailand New Gen Inventors Award 2025 - Gold Medal</h3>
-              <p data-i18n="award_detail">
-                ได้รับรางวัลจากสำนักงานการวิจัยแห่งชาติ จากผลงานเครื่องมือ machine learning
-                สำหรับวินิจฉัยโรคลำต้นเน่าของปาล์มน้ำมัน
-              </p>
-            </article>
-          </div>
-        </div>
-      </section>
-    </main>
+let activeZoomButton = null;
 
-    <div class="lightbox" id="image-lightbox" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Large project image view">
-      <button class="lightbox-backdrop" type="button" aria-label="ปิดภาพ"></button>
-      <figure class="lightbox-content">
-        <img alt="">
-        <figcaption></figcaption>
-        <button class="lightbox-close" type="button" aria-label="ปิดภาพ">×</button>
-      </figure>
-    </div>
+function openLightbox(button) {
+  if (!lightbox || !lightboxImage || !lightboxCaption) return;
 
-    <footer class="site-footer" id="contact">
-      <div class="footer-inner">
-        <div>
-          <p class="eyebrow" data-i18n="contact_eyebrow">Contact</p>
-          <h2>Chalatorn Augsornthip</h2>
-          <p data-i18n="contact_role">AI Engineer / Computer Systems Developer</p>
-        </div>
-        <address class="contact-list">
-          <a href="mailto:augsornthip03@gmail.com">augsornthip03@gmail.com</a>
-          <a href="tel:+66915276857">+66 91 527 6857</a>
-          <a href="https://linkedin.com/in/chalatorn-augsornthip-69339b254" target="_blank" rel="noreferrer">LinkedIn</a>
-          <a href="https://github.com/augsornthip03" target="_blank" rel="noreferrer">GitHub</a>
-        </address>
-      </div>
-    </footer>
+  activeZoomButton = button;
+  lightboxImage.src = button.dataset.lightboxSrc;
+  lightboxImage.alt = button.dataset.lightboxAlt || "";
+  lightboxCaption.textContent = button.dataset.lightboxCaption || "";
+  lightbox.classList.add("is-open");
+  lightbox.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+  lightbox.querySelector(".lightbox-close")?.focus({ preventScroll: true });
+}
 
-    <script src="script.js"></script>
-  </body>
-</html>
+function closeLightbox() {
+  if (!lightbox || !lightboxImage || !lightboxCaption || !lightbox.classList.contains("is-open")) return;
+
+  lightbox.classList.remove("is-open");
+  lightbox.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+  lightboxImage.removeAttribute("src");
+  lightboxImage.alt = "";
+  lightboxCaption.textContent = "";
+  activeZoomButton?.focus({ preventScroll: true });
+}
+
+zoomButtons.forEach((button) => {
+  button.addEventListener("click", () => openLightbox(button));
+});
+
+lightboxCloseControls.forEach((control) => {
+  control.addEventListener("click", closeLightbox);
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeLightbox();
+});
+
+applyLanguage(localStorage.getItem("portfolio-language") || "th");
